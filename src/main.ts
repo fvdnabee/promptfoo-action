@@ -40,17 +40,21 @@ export async function run(): Promise<void> {
       required: false,
     });
     const githubToken: string = core.getInput('github-token', {required: true});
-    const workingDirectory: string = core.getInput('working-directory', {
-      required: false,
-    }) || '';
+    const workingDirectory: string =
+      core.getInput('working-directory', {
+        required: false,
+      }) || '';
     // Relative to repo root, as action could trigger on changes outside of workingDirectory.
     const promptFilesGlobs: string[] = core
       .getInput('prompts', {required: true})
       .split('\n');
     // config input is relative to workingDirectory (if set), configPath is relative to repo root.
-    const configPath: string = path.join(workingDirectory, core.getInput('config', {
-      required: true,
-    }));
+    const configPath: string = path.join(
+      workingDirectory,
+      core.getInput('config', {
+        required: true,
+      }),
+    );
     const cachePath: string = core.getInput('cache-path', {required: false});
     const version: string = core.getInput('promptfoo-version', {
       required: false,
@@ -127,7 +131,7 @@ export async function run(): Promise<void> {
     }
 
     if (workingDirectory) {
-      core.info(`Changing directory to ${workingDirectory}`);
+      core.info(`Changing working directory to ${workingDirectory}`);
       process.chdir(workingDirectory);
     }
 
@@ -135,7 +139,9 @@ export async function run(): Promise<void> {
     const relConfigPath = path.relative(workingDirectory, configPath);
     let promptfooArgs = ['eval', '-c', relConfigPath, '-o', outputFile];
     if (!useConfigPrompts) {
-      const relPromptFiles = promptFiles.map(file => path.relative(workingDirectory, file));
+      const relPromptFiles = promptFiles.map(file =>
+        path.relative(workingDirectory, file),
+      );
       promptfooArgs = promptfooArgs.concat(['--prompts', ...relPromptFiles]);
     }
     if (!noShare) {

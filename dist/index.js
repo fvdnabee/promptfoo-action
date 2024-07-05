@@ -80,12 +80,17 @@ function run() {
                 required: false,
             });
             const githubToken = core.getInput('github-token', { required: true });
+            const workingDirectory = core.getInput('working-directory', {
+                required: false,
+            }) || '';
+            // Relative to repo root, as action could trigger on changes outside of workingDirectory.
             const promptFilesGlobs = core
                 .getInput('prompts', { required: true })
                 .split('\n');
-            const configPath = core.getInput('config', {
+            // config input is relative to workingDirectory (if set), configPath is relative to repo root.
+            const configPath = path.join(workingDirectory, core.getInput('config', {
                 required: true,
-            });
+            }));
             const cachePath = core.getInput('cache-path', { required: false });
             const version = core.getInput('promptfoo-version', {
                 required: false,
@@ -144,10 +149,16 @@ function run() {
                 core.info('No LLM prompt or config files were modified.');
                 return;
             }
+            if (workingDirectory) {
+                core.info(`Changing working directory to ${workingDirectory}`);
+                process.chdir(workingDirectory);
+            }
             const outputFile = path.join(process.cwd(), 'output.json');
-            let promptfooArgs = ['eval', '-c', configPath, '-o', outputFile];
+            const relConfigPath = path.relative(workingDirectory, configPath);
+            let promptfooArgs = ['eval', '-c', relConfigPath, '-o', outputFile];
             if (!useConfigPrompts) {
-                promptfooArgs = promptfooArgs.concat(['--prompts', ...promptFiles]);
+                const relPromptFiles = promptFiles.map(file => path.relative(workingDirectory, file));
+                promptfooArgs = promptfooArgs.concat(['--prompts', ...relPromptFiles]);
             }
             if (!noShare) {
                 promptfooArgs.push('--share');
