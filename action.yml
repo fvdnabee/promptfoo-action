@@ -11,10 +11,13 @@ inputs:
     description: 'List of prompt files to watch'
     required: true
   config:
-    description: 'Path to a promptfoo config file'
+    description: 'Path to a promptfoo config file, relative to working-directory (if set)'
     required: true
   cache-path:
     description: 'Path to cache directory'
+    required: false
+  working-directory:
+    description: 'Directory to run promptfoo from'
     required: false
   openai-api-key:
     description: 'OpenAI API Key'
